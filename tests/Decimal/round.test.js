@@ -10,6 +10,10 @@ const _0r = (n) => "0".repeat(n);
 const _9r = (n) => "9".repeat(n);
 
 describe("rounding", () => {
+    test("current difficulty", () => {
+        expect(new Decimal("0.0004").round(2, "ceil").toString()).toStrictEqual("0.01");
+    });
+
     describe("no arguments (round to integer)", () => {
         test.each`
             name                        | input       | output
@@ -37,6 +41,35 @@ describe("rounding", () => {
         });
         test("unsupported rounding mode", () => {
             expect(() => a.round(0, "foobar")).toThrow(RangeError);
+        });
+    });
+});
+
+describe("rounding non-decimal", () => {
+    // rounding should have no effect on integer value for all mode
+    describe.each([
+        NoArguments,
+        "trunc",
+        "ceil",
+        "floor",
+        "halfExpand",
+        "halfEven",
+    ])("mode: %s", (mode) => {
+        test.each`
+            decimals  | input           | output
+            ${0}      | ${"-1"}         | ${"-1"}
+        `("$input round($decimals) to is $output", ({ decimals, input, output }) => {
+            const a = new Decimal(input.trim());
+            const o = output.trim();
+
+            let result;
+            if (mode === NoArguments) {
+                result = a.round();
+            } else {
+                result = a.round(decimals, mode);
+            }
+
+            expect(result.toString()).toStrictEqual(o);
         });
     });
 });
